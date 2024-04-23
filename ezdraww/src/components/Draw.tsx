@@ -41,6 +41,8 @@ const Draw: React.FC<DrawProps> = ({ user, socket }) => {
 
   useEffect(() => {
     socket.on('mousedown', (data) => {
+      console.log("mousedowm");
+      
       setLines((prevLines) => [...prevLines, data.lines]);
     });
 
@@ -51,6 +53,13 @@ const Draw: React.FC<DrawProps> = ({ user, socket }) => {
 
   useEffect(() => {
     socket.on('cursorMove', (data) => {
+      console.log("cursormove");
+      
+      if(data.message)
+      {
+        console.log(data.message);
+        
+      }
       setRemoteCursors((prevCursors) => ({
         ...prevCursors,
         [data.userId]: data.position,
@@ -61,8 +70,26 @@ const Draw: React.FC<DrawProps> = ({ user, socket }) => {
       socket.off('cursorMove');
     };
   }, [socket]);
+  useEffect(() => {
+    socket.on('roomcheck', (data) => {
+      console.log("roomcheck");
+      
+      if(data.message)
+      {
+        console.log(data.message);
+        
+      }
+      
+    });
+
+    return () => {
+      socket.off('cursorMove');
+    };
+  }, [socket]);
 
   useEffect(() => {
+  
+    
     socket.emit('cursorMove', { position: cursorPosition });
 
     return () => {

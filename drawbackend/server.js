@@ -5,12 +5,14 @@ const jwt = require('jsonwebtoken');
 const http = require("http");
 const socketio = require("socket.io");
 const cors = require("cors");
+require('dotenv').config();
+
 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect('mongodb+srv://username:passwordcluster0.6qjfwdy.mongodb.net/myecom',{
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.6qjfwdy.mongodb.net/myecom`,{
   useNewUrlParser: true,
   useUnifiedTopology: true,
    // specify the database name separately
@@ -89,9 +91,10 @@ io.engine.on("connection_error", (err) => {
   console.log(err.message);  // the error message, for example "Session ID unknown"
   console.log(err.context);  // some additional error context
 });
-
 io.on("connection", (socket) => {
   let roomIdg, messageg;
+
+  
   socket.on("whiteboarddata", (data) => {
     messageg = data.message;
     socket.broadcast.to(roomIdg).emit("whiteboardrespponse", { message: messageg });
@@ -100,15 +103,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on('cursorMove', (data) => {
+
     io.emit("cursorMove", { postion: data.position, userid: socket.id });
   });
 
   socket.on("userjoined", (data) => {
     const { name, userId, roomId, host, presenter } = data;
+    socket.roomId=roomId
     roomIdg = roomId;
     socket.join(roomId);
     socket.emit("userIsJoined", { success: true, roomId: roomId });
-    io.to(roomId).emit("whiteboardresponse", { message: socket.id });
+    console.log(roomIdg);
+    io.sockets.in(roomId).emit('room', {message:"room"});
+    io.to(socket.roomId).emit("romcheck", { message: "to room id" });
+    io.emit("romcheck", { message: "from io" });
   });
 
   socket.on("sendmessage", (data) => {
@@ -116,7 +124,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on('drawing', (data) => {
-    io.emit("mousedown", data);
+    // console.log(roomIdg);
+    // io.to(roomIdg).emit("room", { message: "to room id" });
+    console.log("secot.room",socket.roomId);
+    console.log("roomidg",roomIdg);
+
+    io.sockets.in(roomIdg).emit('room', {message:"room"});
+    io.to(socket.roomId).emit("room", { message: "to room id" });
+    io.emit("room", { message: "from io" });
+
+   
+    io.to(socket.roomId).emit("mousedown", data);
     socket.emit('drawing', data);
   });
 

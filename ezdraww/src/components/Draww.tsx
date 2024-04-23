@@ -47,7 +47,13 @@ const Draw: React.FC<DrawProps> = ({ user, socket }) => {
 
   useEffect(() => {
     socket.on('mousedown', (data) => {
+      console.log("dowm");
+
       setLines((prevLines) => [...prevLines, data.lines]);
+    });
+    socket.on('room', (data) => {
+      console.log(data.message);
+
     });
 
     return () => {
@@ -57,6 +63,8 @@ const Draw: React.FC<DrawProps> = ({ user, socket }) => {
 
   useEffect(() => {
     socket.on('cursorMove', (data) => {
+      console.log("rmove");
+
       setRemoteCursors((prevCursors) => ({
         ...prevCursors,
         [data.userId]: data.position,
